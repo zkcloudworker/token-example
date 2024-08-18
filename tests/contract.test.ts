@@ -188,8 +188,8 @@ describe("Token Worker", () => {
           AccountUpdate.fundNewAccount(sender, 3);
           await adminContract.deploy({ adminPublicKey });
           await zkApp.deploy({
-            symbol: "ZKCW",
-            src: "https://github.com/MinaFoundation/mina-fungible-token/blob/main/FungibleToken.ts",
+            symbol: "ZKCW1",
+            src: "https://zkcloudworker.com",
           });
           await zkApp.initialize(
             adminPublicKey,
@@ -215,7 +215,7 @@ describe("Token Worker", () => {
         },
         async () => {
           AccountUpdate.fundNewAccount(sender, 1);
-          await zkApp.mint(userPublicKey, new UInt64(100e9));
+          await zkApp.mint(userPublicKey, new UInt64(1000e9));
         }
       );
       await mintTx.prove();
@@ -238,7 +238,7 @@ describe("Token Worker", () => {
           contractAddress: contractPublicKey.toBase58(),
           from: userPrivateKey.toBase58(),
           to: PrivateKey.random().toPublicKey().toBase58(),
-          amount: 1_000_000,
+          amount: 100_000_000,
         }),
         metadata: `send tokens`,
       });
