@@ -941,12 +941,45 @@ __metadata:
   languageName: node
   linkType: hard
 
+"arconnect@npm:^0.4.2":
+  version: 0.4.2
+  resolution: "arconnect@npm:0.4.2"
+  dependencies:
+    arweave: "npm:^1.10.13"
+  checksum: 10c0/9bad8efd90b7df55173adddf14b003ae667ab4b35141639dd9ad3bf5d9f08bf7b77dfec6c6b9c433be03bb265d7a19fab4a397cc155644212bcbb934c68b9d30
+  languageName: node
+  linkType: hard
+
 "argparse@npm:^1.0.7":
   version: 1.0.10
   resolution: "argparse@npm:1.0.10"
   dependencies:
     sprintf-js: "npm:~1.0.2"
   checksum: 10c0/b2972c5c23c63df66bca144dbc65d180efa74f25f8fd9b7d9a0a6c88ae839db32df3d54770dcb6460cf840d232b60695d1a6b1053f599d84e73f7437087712de
+  languageName: node
+  linkType: hard
+
+"arweave@npm:^1.10.13, arweave@npm:^1.15.1":
+  version: 1.15.1
+  resolution: "arweave@npm:1.15.1"
+  dependencies:
+    arconnect: "npm:^0.4.2"
+    asn1.js: "npm:^5.4.1"
+    base64-js: "npm:^1.5.1"
+    bignumber.js: "npm:^9.0.2"
+  checksum: 10c0/2af04ee2071d3aa95f4ebf11463542ea18bc5eab810025a7b2ce60a6175ff7859f1447a925234e8bee31631f2fd2d67af80826909f65bc793d72dcb080cab26f
+  languageName: node
+  linkType: hard
+
+"asn1.js@npm:^5.4.1":
+  version: 5.4.1
+  resolution: "asn1.js@npm:5.4.1"
+  dependencies:
+    bn.js: "npm:^4.0.0"
+    inherits: "npm:^2.0.1"
+    minimalistic-assert: "npm:^1.0.0"
+    safer-buffer: "npm:^2.1.0"
+  checksum: 10c0/b577232fa6069cc52bb128e564002c62b2b1fe47f7137bdcd709c0b8495aa79cee0f8cc458a831b2d8675900eea0d05781b006be5e1aa4f0ae3577a73ec20324
   languageName: node
   linkType: hard
 
@@ -1058,10 +1091,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"base64-js@npm:^1.5.1":
+  version: 1.5.1
+  resolution: "base64-js@npm:1.5.1"
+  checksum: 10c0/f23823513b63173a001030fae4f2dabe283b99a9d324ade3ad3d148e218134676f1ee8568c877cd79ec1c53158dcf2d2ba527a97c606618928ba99dd930102bf
+  languageName: node
+  linkType: hard
+
+"bignumber.js@npm:^9.0.2":
+  version: 9.1.2
+  resolution: "bignumber.js@npm:9.1.2"
+  checksum: 10c0/e17786545433f3110b868725c449fa9625366a6e675cd70eb39b60938d6adbd0158cb4b3ad4f306ce817165d37e63f4aa3098ba4110db1d9a3b9f66abfbaf10d
+  languageName: node
+  linkType: hard
+
 "blakejs@npm:1.2.1":
   version: 1.2.1
   resolution: "blakejs@npm:1.2.1"
   checksum: 10c0/c284557ce55b9c70203f59d381f1b85372ef08ee616a90162174d1291a45d3e5e809fdf9edab6e998740012538515152471dc4f1f9dbfa974ba2b9c1f7b9aad7
+  languageName: node
+  linkType: hard
+
+"bn.js@npm:^4.0.0":
+  version: 4.12.0
+  resolution: "bn.js@npm:4.12.0"
+  checksum: 10c0/9736aaa317421b6b3ed038ff3d4491935a01419ac2d83ddcfebc5717385295fcfcf0c57311d90fe49926d0abbd7a9dbefdd8861e6129939177f7e67ebc645b21
   languageName: node
   linkType: hard
 
@@ -1863,7 +1917,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"inherits@npm:2":
+"inherits@npm:2, inherits@npm:^2.0.1":
   version: 2.0.4
   resolution: "inherits@npm:2.0.4"
   checksum: 10c0/4e531f648b29039fb7426fb94075e6545faa1eb9fe83c29f0b6d9e7263aceb4289d2d4557db0d428188eeb449cc7c5e77b0a0b2c4e248ff2a65933a0dee49ef2
@@ -2682,6 +2736,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"minimalistic-assert@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "minimalistic-assert@npm:1.0.1"
+  checksum: 10c0/96730e5601cd31457f81a296f521eb56036e6f69133c0b18c13fe941109d53ad23a4204d946a0d638d7f3099482a0cec8c9bb6d642604612ce43ee536be3dddd
+  languageName: node
+  linkType: hard
+
 "minimatch@npm:^3.0.4, minimatch@npm:^3.1.1, minimatch@npm:^3.1.2":
   version: 3.1.2
   resolution: "minimatch@npm:3.1.2"
@@ -3209,7 +3270,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"safer-buffer@npm:>= 2.1.2 < 3.0.0":
+"safer-buffer@npm:>= 2.1.2 < 3.0.0, safer-buffer@npm:^2.1.0":
   version: 2.1.2
   resolution: "safer-buffer@npm:2.1.2"
   checksum: 10c0/7e3c8b2e88a1841c9671094bbaeebd94448111dd90a81a1f606f3f67708a6ec57763b3b47f06da09fc6054193e0e6709e77325415dc8422b04497a8070fa02d4
@@ -3515,6 +3576,7 @@ __metadata:
     "@jest/globals": "npm:^29.7.0"
     "@types/jest": "npm:^29.5.12"
     "@types/node": "npm:^22.1.0"
+    arweave: "npm:^1.15.1"
     jest: "npm:^29.7.0"
     o1js: "npm:^1.6.0"
     ts-jest: "npm:^29.2.4"
