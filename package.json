@@ -4,14 +4,16 @@
   "author": "DFST",
   "scripts": {
     "test": "jest",
-    "local": "jest --chain=local --cloud=local --deploy=true",
-    "lightnet.deploy": "jest --chain=lightnet --cloud=local --deploy=true --send=false",
-    "lightnet.run": "jest --chain=lightnet --cloud=local --deploy=false",
-    "zeko.deploy": "jest --chain=zeko --deploy=true --cloud=local --send=false",
-    "zeko.run": "jest --chain=zeko --deploy=false",
-    "devnet.deploy": "jest --chain=devnet --cloud=local --deploy=true --send=false",
-    "devnet.local": "jest --chain=devnet --cloud=local --deploy=false --send=true",
-    "devnet.run": "jest --chain=devnet --deploy=false --compile=false"
+    "local": "jest contract.test --chain=local --cloud=local --deploy=true",
+    "lightnet.deploy": "jest contract.test --chain=lightnet --cloud=local --deploy=true --send=false",
+    "lightnet.run": "jest contract.test --chain=lightnet --cloud=local --deploy=false",
+    "zeko.deploy": "jest contract.test --chain=zeko --deploy=true --cloud=local --send=false",
+    "zeko.run": "jest contract.test --chain=zeko --deploy=false",
+    "devnet.deploy": "jest contract.test --chain=devnet --cloud=local --deploy=true --send=false",
+    "devnet.local": "jest contract.test --chain=devnet --cloud=local --deploy=false --send=true",
+    "devnet.run": "jest contract.test --chain=devnet --deploy=false --compile=false",
+    "mcoin.deploy": "jest issue.test --chain=devnet --cloud=local --deploy=true --send=false",
+    "mcoin.mint": "jest issue.test --chain=devnet --cloud=local --deploy=false --mint=true --send=false"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
@@ -23,6 +25,7 @@
   },
   "packageManager": "yarn@4.4.0",
   "dependencies": {
+    "arweave": "^1.15.1",
     "o1js": "^1.6.0",
     "zkcloudworker": "^0.12.2"
   },
