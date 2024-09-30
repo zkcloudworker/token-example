@@ -10,6 +10,7 @@ import {
   setNumberOfWorkers,
   UInt8,
   Bool,
+  Field,
 } from "o1js";
 
 import {
@@ -26,10 +27,19 @@ import {
 import { zkcloudworker } from "..";
 import { FungibleToken } from "../src/FungibleToken";
 import { FungibleTokenAdmin } from "../src/FungibleTokenAdmin";
-import { USER_PRIVATE_KEY, USER_PUBLIC_KEY, TOKEN_ADDRESS } from "../env.json";
+import {
+  USER_PRIVATE_KEY,
+  USER_PUBLIC_KEY,
+  TOKEN_ADDRESS,
+  ADMIN_PRIVATE_KEY,
+} from "../env.json";
 import packageJson from "../package.json";
 import { JWT } from "../env.json";
-
+import {
+  adminContractVerificationKey,
+  tokenContractVerificationKey,
+} from "../src/vk";
+import { ZkappCommand } from "o1js/dist/node/mina-signer/src/types";
 const ONE_ELEMENTS_NUMBER = 1;
 const MANY_ELEMENTS_NUMBER = 1;
 const MANY_BATCH_SIZE = 3;
@@ -51,15 +61,23 @@ let sender: PublicKey;
 const oneValues: number[] = [];
 const manyValues: number[][] = [];
 
-const adminPrivateKey = PrivateKey.random();
+const adminPrivateKey = PrivateKey.fromBase58(ADMIN_PRIVATE_KEY);
 const adminPublicKey = adminPrivateKey.toPublicKey();
+const adminContractPrivateKey = PrivateKey.random();
+const adminContractPublicKey = adminContractPrivateKey.toPublicKey();
 const contractPrivateKey = PrivateKey.random();
 const contractPublicKey =
-  chain === "devnet"
+  chain === "local"
     ? PublicKey.fromBase58(TOKEN_ADDRESS)
     : contractPrivateKey.toPublicKey();
 const userPrivateKey = PrivateKey.fromBase58(USER_PRIVATE_KEY);
 const userPublicKey = PublicKey.fromBase58(USER_PUBLIC_KEY);
+const user2PrivateKey = PrivateKey.random();
+const user2PublicKey = user2PrivateKey.toPublicKey();
+const user3PrivateKey = PrivateKey.random();
+const user3PublicKey = user3PrivateKey.toPublicKey();
+const user4PrivateKey = PrivateKey.random();
+const user4PublicKey = user4PrivateKey.toPublicKey();
 const zkApp = new FungibleToken(contractPublicKey);
 let contractVerificationKey: VerificationKey;
 let adminVerificationKey: VerificationKey;
@@ -146,14 +164,6 @@ describe("Token Worker", () => {
         .verificationKey;
       console.timeEnd("FungibleToken compiled");
       console.timeEnd("compiled");
-      console.log(
-        "FungibleToken verification key",
-        contractVerificationKey.hash.toJSON()
-      );
-      console.log(
-        "FungibleTokenAdmin verification key",
-        adminVerificationKey.hash.toJSON()
-      );
       Memory.info("compiled");
     });
   }
@@ -164,6 +174,7 @@ describe("Token Worker", () => {
 
       await fetchMinaAccount({ publicKey: sender, force: true });
       await fetchMinaAccount({ publicKey: userPublicKey });
+      await fetchMinaAccount({ publicKey: adminPublicKey });
       if (!Mina.hasAccount(userPublicKey)) {
         const topupTx = await Mina.transaction(
           {
@@ -179,20 +190,35 @@ describe("Token Worker", () => {
         topupTx.sign([deployer]);
         await sendTx(topupTx, "topup");
       }
-      const adminContract = new FungibleTokenAdmin(adminPublicKey);
+      if (!Mina.hasAccount(adminPublicKey)) {
+        const topupTx2 = await Mina.transaction(
+          {
+            sender,
+            fee: await fee(),
+          },
+          async () => {
+            const senderUpdate = AccountUpdate.createSigned(sender);
+            senderUpdate.balance.subInPlace(1000000000);
+            senderUpdate.send({ to: adminPublicKey, amount: 100_000_000_000 });
+          }
+        );
+        topupTx2.sign([deployer]);
+        await sendTx(topupTx2, "topup admin");
+      }
+      const adminContract = new FungibleTokenAdmin(adminContractPublicKey);
       await fetchMinaAccount({ publicKey: sender, force: true });
 
       const tx = await Mina.transaction(
-        { sender, fee: await fee(), memo: "deploy" },
+        { sender: adminPublicKey, fee: await fee(), memo: "deploy" },
         async () => {
-          AccountUpdate.fundNewAccount(sender, 3);
+          AccountUpdate.fundNewAccount(adminPublicKey, 3);
           await adminContract.deploy({ adminPublicKey });
           await zkApp.deploy({
-            symbol: "ZKCW1",
+            symbol: "ZKCW2",
             src: "https://zkcloudworker.com",
           });
           await zkApp.initialize(
-            adminPublicKey,
+            adminContractPublicKey,
             UInt8.from(9),
             // We can set `startPaused` to `Bool(false)` here, because we are doing an atomic deployment
             // If you are not deploying the admin and token contracts in the same transaction,
@@ -203,24 +229,142 @@ describe("Token Worker", () => {
         }
       );
       await tx.prove();
-      tx.sign([deployer, contractPrivateKey, adminPrivateKey]);
+      tx.sign([adminPrivateKey, contractPrivateKey, adminContractPrivateKey]);
 
-      await sendTx(tx, "deploy");
+      const txJSON = tx.toJSON();
+      const txNew = Mina.Transaction.fromJSON(JSON.parse(txJSON));
+
+      await sendTx(txNew, "deploy");
       Memory.info("deployed");
+      await sleep(10000);
+      const tokenId = zkApp.deriveTokenId();
+      await fetchMinaAccount({ publicKey: sender, force: true });
+      await fetchMinaAccount({ publicKey: adminPublicKey, force: true });
+      await fetchMinaAccount({ publicKey: contractPublicKey, force: true });
+      await fetchMinaAccount({
+        publicKey: contractPublicKey,
+        tokenId,
+        force: true,
+      });
+      await fetchMinaAccount({
+        publicKey: adminContractPublicKey,
+        force: true,
+      });
+      await fetchMinaAccount({
+        publicKey: userPublicKey,
+        tokenId,
+        force: true,
+      });
+      await fetchMinaAccount({
+        publicKey: user2PublicKey,
+        tokenId,
+        force: true,
+      });
+      await fetchMinaAccount({
+        publicKey: user3PublicKey,
+        tokenId,
+        force: true,
+      });
+      await fetchMinaAccount({
+        publicKey: user4PublicKey,
+        tokenId,
+        force: true,
+      });
+      let nonce = Number(Mina.getAccount(adminPublicKey).nonce.toBigint());
 
       const mintTx = await Mina.transaction(
         {
-          sender,
+          sender: adminPublicKey,
           fee: await fee(),
+          nonce: nonce++,
+          memo: "mint1",
         },
         async () => {
-          AccountUpdate.fundNewAccount(sender, 1);
+          AccountUpdate.fundNewAccount(adminPublicKey, 1);
           await zkApp.mint(userPublicKey, new UInt64(1000e9));
         }
       );
       await mintTx.prove();
-      mintTx.sign([deployer, adminPrivateKey]);
-      await sendTx(mintTx, "mint");
+      mintTx.sign([adminPrivateKey]);
+      const sentMintTx = await sendTx(mintTx, "mint1", false);
+
+      const mintTx2 = await Mina.transaction(
+        {
+          sender: adminPublicKey,
+          fee: await fee(),
+          nonce: nonce++,
+          memo: "mint2",
+        },
+        async () => {
+          AccountUpdate.fundNewAccount(adminPublicKey, 1);
+          await zkApp.mint(user2PublicKey, new UInt64(1000e9));
+        }
+      );
+      await mintTx2.prove();
+      mintTx2.sign([adminPrivateKey]);
+      const sentMintTx2 = await sendTx(mintTx2, "mint2", false);
+
+      const mintTx3 = await Mina.transaction(
+        {
+          sender: adminPublicKey,
+          fee: await fee(),
+          nonce: nonce++,
+          memo: "mint3",
+        },
+        async () => {
+          AccountUpdate.fundNewAccount(adminPublicKey, 1);
+          await zkApp.mint(user3PublicKey, new UInt64(1000e9));
+        }
+      );
+      await mintTx3.prove();
+      mintTx3.sign([adminPrivateKey]);
+      const sentMintTx3 = await sendTx(mintTx3, "mint3", false);
+
+      const mintTx4 = await Mina.transaction(
+        {
+          sender: adminPublicKey,
+          fee: await fee(),
+          nonce: nonce++,
+          memo: "mint4",
+        },
+        async () => {
+          AccountUpdate.fundNewAccount(adminPublicKey, 1);
+          await zkApp.mint(user4PublicKey, new UInt64(1000e9));
+        }
+      );
+      await mintTx4.prove();
+      mintTx4.sign([adminPrivateKey]);
+      const sentMintTx4 = await sendTx(mintTx4, "mint4", false);
+
+      console.log("Waiting for mint tx1 to be included...", sentMintTx?.status);
+      if (sentMintTx && sentMintTx.status === "pending") {
+        const txIncluded = await sentMintTx.safeWait();
+        console.log("Mint tx1 included:", txIncluded.status);
+      }
+      console.log(
+        "Waiting for mint tx2 to be included...",
+        sentMintTx2?.status
+      );
+      if (sentMintTx2 && sentMintTx2.status === "pending") {
+        const txIncluded = await sentMintTx2.safeWait();
+        console.log("Mint tx2 included:", txIncluded.status);
+      }
+      console.log(
+        "Waiting for mint tx3 to be included...",
+        sentMintTx3?.status
+      );
+      if (sentMintTx3 && sentMintTx3.status === "pending") {
+        const txIncluded = await sentMintTx3.safeWait();
+        console.log("Mint tx3 included:", txIncluded.status);
+      }
+      console.log(
+        "Waiting for mint tx4 to be included...",
+        sentMintTx4?.status
+      );
+      if (sentMintTx4 && sentMintTx4.status === "pending") {
+        const txIncluded = await sentMintTx4.safeWait();
+        console.log("Mint tx4 included:", txIncluded.status);
+      }
     });
   }
 
@@ -301,7 +445,8 @@ function processArguments(): {
 
 async function sendTx(
   tx: Mina.Transaction<false, true> | Mina.Transaction<true, true>,
-  description?: string
+  description?: string,
+  wait?: boolean
 ) {
   try {
     let txSent;
@@ -322,9 +467,10 @@ async function sendTx(
         console.log(
           `${description ?? ""} tx NOT sent: hash: ${txSent?.hash} status: ${
             txSent?.status
-          }`
+          }`,
+          txSent.errors
         );
-        return "Error sending transaction";
+        return undefined;
       }
     }
     if (txSent === undefined) throw new Error("txSent is undefined");
@@ -336,7 +482,7 @@ async function sendTx(
       );
     }
 
-    if (txSent.status === "pending") {
+    if (txSent.status === "pending" && wait !== false) {
       console.log(`Waiting for tx inclusion...`);
       const txIncluded = await txSent.safeWait();
       console.log(
@@ -344,7 +490,8 @@ async function sendTx(
           txIncluded.hash
         } status: ${txIncluded.status}`
       );
-    }
+      return undefined;
+    } else return txSent;
   } catch (error) {
     if (chain !== "zeko") console.error("Error sending tx", error);
   }

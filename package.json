@@ -1,6 +1,6 @@
 {
   "name": "token-example",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "DFST",
   "scripts": {
     "test": "jest",
@@ -9,7 +9,7 @@
     "lightnet.run": "jest contract.test --chain=lightnet --cloud=local --deploy=false",
     "zeko.deploy": "jest contract.test --chain=zeko --deploy=true --cloud=local --send=false",
     "zeko.run": "jest contract.test --chain=zeko --deploy=false",
-    "devnet.deploy": "jest contract.test --chain=devnet --cloud=local --deploy=true --send=false",
+    "devnet.deploy": "jest contract.test --chain=devnet --cloud=local --deploy=true --send=true",
     "devnet.local": "jest contract.test --chain=devnet --cloud=local --deploy=false --send=true",
     "devnet.run": "jest contract.test --chain=devnet --deploy=false --compile=false",
     "mcoin.deploy": "jest issue.test --chain=devnet --cloud=local --deploy=true --send=false",

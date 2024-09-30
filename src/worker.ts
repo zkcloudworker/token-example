@@ -163,6 +163,10 @@ export class TokenWorker extends zkCloudWorker {
       console.timeEnd("prepared tx");
       let txSent;
       let sent = false;
+      await this.cloud.saveFile(
+        `tx-${receiver.toBase58()}`,
+        Buffer.from(tx.toJSON())
+      );
       while (!sent) {
         txSent = await tx.safeSend();
         if (txSent.status == "pending") {

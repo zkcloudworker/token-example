@@ -169,6 +169,8 @@ export class ArweaveService {
 
   public async balance(): Promise<string | undefined> {
     const address = await this.arweave.wallets.jwkToAddress(this.key);
+    console.log("address", address);
+    console.log("key", this.key);
     const balance = await this.arweave.wallets.getBalance(address);
     const ar = this.arweave.ar.winstonToAr(balance);
     return ar;
